@@ -1,7 +1,13 @@
 <!-- recordatorio: subir imágenes proceso -->
 
+nuestra idea inicial fue un circuito que al encenderlo emitiera un sonido como un "click" pero de manera irregular, parecido al bombeo del corazón
+
+<img src="media/comp_ideainicial.jpeg" width="500">
+
 ---
 nuestro prototipo se compone de un circuito integrado 555 junto a dos potenciómetros, donde uno de los potenciómetros regula la corriente que llega a la bocina y un diodo led, mientras que el otro potenciómetro, conectado al primer led y la bocina, regula la corriente que llega a los otros tres diodos leds, que únicamente encienden cuando el led y la bocina reciben corriente.
+
+<img src="media/ideaPote_reimaginacion.jpeg" width="500">
 
 ---
 #### 22/08
@@ -33,7 +39,9 @@ quizás dejarlo así pueda argumentarse con la idea de que la vida, el tiempo so
 
 un gran poeta una vez dijo "la vida cambia, pero sigo tranquilo, que si esto es un ciclo volveremos al vinilo" Bak in de Deiz, Rick Santino - Rttc Comité, 2015.
 
-una idea que rondaba en mi mente en esos tiempos de joven idealista con muchas buenas ideas, era de que cambios extremos eran necesarios en la historia de la humanidad, idea un poco extremista, alimentada de historias (como hora de aventura) donde todo pareciera ser más simple, sin las problemáticas que existen actualmente debido al negativo impacto que han tenido las nuevas tecnologías en la gente
+una idea que rondaba en mi mente en esos tiempos de joven idealista con muchas buenas ideas, era de que cambios extremos eran necesarios en la historia de la humanidad, idea un poco extremista, alimentada de historias (como hora de aventura) donde todo pareciera ser más simple, sin las problemáticas que existen actualmente debido al negativo impacto que han tenido las nuevas tecnologías en la gente.
+
+<img src="media/otraidea.jpeg" width="500">
 
 ---
 
@@ -42,6 +50,8 @@ en el libro "Así habló Zaratustra", hay un capítulo llamado "De la visión y 
 ---
 #### 24/08
 nuevo. los profes me dieron otra mirada del prototipo, por lo que ahora será un recipiente que permite, a través de una ranura, ingresar notas. qué tipo de notas? desahogos, dolores, inquietudes, cuestionamientos, descontentos, todo lo relacionado a lo social, a lo político.
+
+<img src="media/final_e01.jpeg" width="500">
 
 el recipiente tendrá también grietas en sus caras, excepto la frontal, la cual será transparente (para poder dejar ver su interior). estas grietas estarán iluminadas en su parte posterior y la iluminación tendrá un efecto de "respiración" (el brillo aumentará y disminuirá gradualmente).
 
@@ -247,5 +257,14 @@ REFERENTES
 [Shibboleth - Doris Salcedo](https://historia-arte.com/obras/shibboleth)\
 [New Guide: Make a Glowing LED Resin River Table](https://blog.adafruit.com/2018/12/12/new-guide-make-a-glowing-led-resin-river-table/)\
 [Alfredo Jaar, intervenciones urbanas](https://mac.uchile.cl/obras/intervenciones-urbanas-de-la-serie-estudios-sobre-la-felicidad/)
+
+---
+
+EL MEDIO ES EL MENSAJE (Comprender los medios de comunicación)
+
+me llamó la atención la manera de ver la tecnología como una extensión del ser humano, porque, a pesar de ser una mirada con la que concuerdo, pareciera que muchas veces caemos en echarle la culpa a las mismas tecnologías: "sin las armas la sociedad sería mejor", "se me quedó pegado el computador" (perdiendo la partida de un videojuego). Aunque el ejemplo de las armas pueda verse un poco extremo, no deja de tener algo de verdad, acaso es responsable la bala o quien la manipula? acaso es responsable el computador (o el internet) de mi bajo rendimiento en los videojuegos? 
+Aunque también es humano atribuirle la culpa a alguien (o algo) más, es parte de nuestra naturaleza aunque no queramos, y lo curioso es que lo hacemos de manera inconsciente. Incluso se puede ver en el discurso cotidiano: "*se me cayó* el lápiz", "*se me perdió* el perro en el parque". El otro día vi un fragmento de una entrevista donde se hablaba sobre el uso ético de las tecnologías y específicamente de las redes sociales, sobre hacer el bien o el mal, cosa algo debatible si pensamos en el ejemplo de la automatización que hace McLuhan al principio del capítulo, pero me devuelve a la misma pregunta sobre quién, o qué, es responsable de lo que ocurre en el mundo. Esta reflexión funciona, por lo menos con estas tecnologías "tradicionales" en las que uno tiene el control total de su funcionamiento, pero qué pasa con las nuevas tecnologías que cada vez incorporan más herramientas de inteligencia artificial, haciendo un guiño al caso del jóven que se suicidó a recomendación de su chatbot, porque claro, es evidente que la responsabilidad legal le corresponde a OpenAI, pero se podría argumentar, insensiblemente, que fue el mismo chatbot quien conversó con el adolescente, mas no la compañía que desarrolló el modelo, cuando sabemos (o deberíamos saber) que todo programa "autónomo" carece de autonomía real, dado que se rigen en base a la programación del mismo modelo, aunque no deja de ser algo que se escapa de nuestro control, como cuando una madre no logra hacer que su hijo pare de decir groserías. También podemos hablar de las consecuencias que han tenido las tecnologías en la salud mental hoy en día, es verdad que hoy existen problemas que hace 20 años atrás quizás no se habrían ni siquiera imaginado, como la ansiedad que nos genera el uso de las redes sociales. Por una parte, estamos sumergidos de información todos los días y de toda parte del mundo, por otro lado, el uso a una muy temprana edad, como se puede ver en el documental "El dilema de las redes sociales", con la angustia de la niña por no tener una cantidad suficiente de "me gusta" en sus publicaciones, que sí, las ansias de popularidad existían mucho antes de siquiera pensar en una máquina que pudiera ser capaz de sumar 2+2, pero nunca a una escala tan grande como lo es a día de hoy. Al ser parte de la generación que nació más o menos a la par con el nacimiento de las redes sociales, pude ver toda esa evolución siendo partícipe de estos nuevos medios, la gente ya no se juntaba a pelear afuera de las escuelas, sino que llegaban a la casa a grabarse con la webcam para insultarse y subirlo a "Ask.fm", nuestros modelos a seguir ya no eran cercanos o familiares que admirásemos, ahora son desconocidos, probablemente del otro extremo del mundo, que ciegamente creemos conocer, porque las redes sociales hoy no son un perfil de nuestra persona, sino un perfil de quien queremos hacer creer al resto que es nuestra persona, una gran máscara, en un universo virtual donde máscaras se relacionan con otras máscaras, perdiéndose la propia identidad, producto de esta evolución de la sociedad, porque no solo es ese el problema, también es el tema de que hoy en día nos comunicamos más en este entorno virtual que en la vida real, hay mayor conexión a internet que conexión con la otra persona. Hoy es raro que todos los vecinos se conozcan, a no ser que sean generaciones más adultas o quienes se conocían de hace años.
+Décadas tuvieron que pasar para recién hoy darse cuenta de las consecuencias, en su mayoría negativas, que ha tenido el uso no supervisado de la internet a una temprana edad, ahora que llegamos a ese punto donde poco y nada sirve pedir perdón, pero ahora que sabemos que la tecnología es una extensión nuestra, podemos entender que ésta es inherentemente parte de la sociedad, por lo que tenemos el poder (y responsabilidad) de darle este enfoque más "humano" a la creación o implementación de nuevas tecnologías.
+
 
 
