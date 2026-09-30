@@ -1654,8 +1654,8 @@ void loop() {
 
 ---
 ##### explicaciones breves:
-**softAP**: crea la red wifi y le indica a la esp32 cual debe ser la SSID (nombre de la red) y contraseña
-**servidor.on** (server.on): le indica a la esp32 qué función ejecutar al acceder a alguna ruta (si está en la ruta "/encender", ejecuta la función "encenderLed")
+**softAP**: crea la red wifi y le indica a la esp32 cual debe ser la SSID (nombre de la red) y contraseña\
+**servidor.on** (server.on): le indica a la esp32 qué función ejecutar al acceder a alguna ruta (si está en la ruta "/encender", ejecuta la función "encenderLed")\
 **handleClient**: procesa las peticiones mandadas del cliente (en este caso nuestro teléfono, la esp32 es el servidor, el teléfono el cliente) para saber qué debe hacer según el tipo de petición (encender, apagar)
 
 ---
