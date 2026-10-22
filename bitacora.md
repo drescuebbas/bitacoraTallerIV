@@ -1691,3 +1691,456 @@ ambas ESP32 deben ser programadas para que se comuniquen a través del protocolo
 la ESP32 master tendrá conectado el sensor de presión, leerá sus valores y los mandará a la ESP32 esclava.
 
 la ESP32 esclava tendrá conectada las luces LED. recibirá los valores del sensor de presión y en base a esos valores, encenderá las luces LED.
+
+
+
+## 30 Septiembre
+
+para ver el monitor serial desde la terminal del mac:
+```
+screen /dev/tty.usbserial-0001 115200
+```
+
+-- INFORMACIÓN DE LA ESP32 -- \
+Modelo de Chip: ESP32-D0WD-V3 \
+Número de núcleos: 2 \
+Revisión del Chip: 300 \
+Tamaño de Memoria Flash: 4 MB \
+Dirección MAC: 00:00:00:00:00:00 
+
+---
+
+### tester arduino (para medir resistencias, no tengo multímetro):<!-- {"fold":true} -->
+```cpp
+const int sensorPin = A0;  // Pin analógico donde medimos
+float R1 = 220.0;         // CAMBIA ESTO: Valor en ohmios de tu resistencia conocida (ej: 1000.0 para 1k)
+float Vcc = 5.0;           // Voltaje del Arduino
+
+void setup() {
+  Serial.begin(9600);
+}
+
+void loop() {
+  int raw = analogRead(sensorPin);
+  if (raw > 0 && raw < 1023) {
+    // Calcular el voltaje en el pin A0
+    float Vout = (raw * Vcc) / 1023.0;
+    
+    // Calcular la resistencia misteriosa (R2) usando la fórmula del divisor de tensión
+    float R2 = R1 * (Vout / (Vcc - Vout));
+    
+    Serial.print("Resistencia medida: ");
+    Serial.print(R2);
+    Serial.println(" Ohmios");
+  } else if (raw == 1023) {
+    Serial.println("Error: Resistencia muy alta o circuito abierto.");
+  }
+  delay(1000); // Esperar 1 segundo entre lecturas
+}
+
+```
+
+### código para probar el sensor de flexión:<!-- {"fold":true} -->
+#### prompt:<!-- {"fold":true} -->
+tengo una ESP32-D0WD-V3, una resistencia de 10k y un sensor de flexión que estará conectado al pin D4. estoy trabajando con el programa arduino ide. genera un código simple que permita visualizar en el monitor serial (ajustado a 115200 baud) los valores que entrega el sensor.
+
+```cpp
+const int flexPin = 4; // Usando el pin D4 (GPIO 4)
+
+void setup() {
+  Serial.begin(115200);
+}
+
+void loop() {
+  int flexValue = analogRead(flexPin);
+  
+  Serial.print("Valor del sensor: ");
+  Serial.println(flexValue);
+  
+  delay(100);
+}
+```
+
+### código para probar el sensor de presión con LEDs:<!-- {"fold":true} -->
+
+```cpp
+#include <FastLED.h>
+
+// ==========================================
+// 1. CONFIGURACIÓN DE HARDWARE Y CONSTANTES
+// ==========================================
+#define LED_PIN     18        // Pin D18 (GPIO 18) conectado a DIN de la tira LED
+#define NUM_LEDS    15        // Total de LEDs en tu tira
+#define FSR_PIN     4         // Pin D4 (GPIO 4) para la lectura analógica del FSR402
+#define LED_TYPE    WS2812B   // Tipo de tira digital
+#define COLOR_ORDER GRB       // Orden de colores típico de las tiras WS2812B
+
+// Arreglo en memoria para almacenar el estado de cada LED
+CRGB leds[NUM_LEDS];
+
+// ==========================================
+// 2. PARÁMETROS AJUSTABLES (SENSIBILIDAD Y EFECTOS)
+// ==========================================
+// Umbral mínimo de presión: lecturas bajo este valor apagan la tira
+const int UMBRAL_MIN = 80;
+
+// Lectura del sensor que encenderá los 15 LEDs al máximo
+const int UMBRAL_MAX = 3500;
+
+// ACTIVAR/DESACTIVAR EFECTO DE RESPIRACIÓN:
+// Pon 'true' para respiración, o 'false' para brillo estable sin oscilación.
+const bool ACTIVAR_RESPIRACION = true;
+
+// Velocidad de la respiración (números más altos = parpadeo más rápido)
+const uint8_t VELOCIDAD_RESPIRACION = 18; 
+
+// Rango de atenuación de la respiración (80 = respiración sutil; 0 = se apaga casi por completo)
+const uint8_t BRILLO_MIN_RESPIRACION = 130; 
+
+
+// ==========================================
+// 3. CONFIGURACIÓN INICIAL (SETUP)
+// ==========================================
+void setup() {
+  Serial.begin(115200);
+
+  // Inicialización de la biblioteca FastLED
+  FastLED.addLeds<LED_TYPE, LED_PIN, COLOR_ORDER>(leds, NUM_LEDS);
+  
+  // Limite de brillo general de seguridad (0 a 255) para cuidar consumo
+  FastLED.setBrightness(180);
+  
+  // Apaga todos los LEDs al arrancar
+  FastLED.clear();
+  FastLED.show();
+}
+
+
+// ==========================================
+// 4. BUCLE PRINCIPAL (LOOP)
+// ==========================================
+void loop() {
+  // 4.1 Lectura del sensor de presión
+  int fsrReading = analogRead(FSR_PIN);
+
+  // 4.2 Si no hay presión suficiente, apagar todo y salir
+  if (fsrReading < UMBRAL_MIN) {
+    FastLED.clear();
+    FastLED.show();
+    delay(20);
+    return;
+  }
+
+  // 4.3 Mapeo: traduce la presión (UMBRAL_MIN a UMBRAL_MAX) a cantidad de LEDs (1 a 15)
+  int ledsAEncender = map(fsrReading, UMBRAL_MIN, UMBRAL_MAX, 1, NUM_LEDS);
+  ledsAEncender = constrain(ledsAEncender, 1, NUM_LEDS); // Evita superar el límite
+
+  // 4.4 Cálculo del multiplicador de brillo (Efecto de respiración)
+  uint8_t factorBrillo = 255; // Por defecto brillo al 100%
+
+  if (ACTIVAR_RESPIRACION) {
+    // beatsin8() genera una onda senoidal suave entre BRILLO_MIN_RESPIRACION y 255
+    factorBrillo = beatsin8(VELOCIDAD_RESPIRACION, BRILLO_MIN_RESPIRACION, 255);
+  }
+
+  // 4.5 Definición del color Cálido Ámbar (Rojo: 255, Verde: 140, Azul: 10)
+  // Para ajustar el tono: sube Verde para más amarillo, bájalo para más naranja.
+  CRGB colorAmbar = CRGB(255, 140, 10);
+
+  // Si la respiración está activa, aplicamos la modulación sobre el color
+  if (ACTIVAR_RESPIRACION) {
+    colorAmbar.nscale8_video(factorBrillo);
+  }
+
+  // 4.6 Asignación de colores a los LEDs
+  for (int i = 0; i < NUM_LEDS; i++) {
+    if (i < ledsAEncender) {
+      leds[i] = colorAmbar;  // Enciende los LEDs correspondientes a la fuerza
+    } else {
+      leds[i] = CRGB::Black; // Deja apagados los restantes
+    }
+  }
+
+  // 4.7 Enviar los datos a la tira física
+  FastLED.show();
+
+  // Pequeña pausa para no saturar el bus
+  delay(15);
+}
+```
+
+
+### aspectos técnicos<!-- {"fold":true} -->
+TENGO:
+- x2 ESP32
+- sensor presión FSR402
+- resistencias de 10k
+- cinta LED ws2812b
+
+QUÉ QUIERO QUE HAGAN?
+- que los LEDs enciendan según la presión ejercida en el sensor
+- que sea de manera inalámbrica
+
+CÓMO?
+- mediante protocolo ESP-NOW
+- la ESP32 master tendrá conectado el sensor FSR
+- la ESP32 slave tendrá conectada las luces LED
+- ESP32 master mandará los valores del FSR al slave
+- ESP32 slave interpretará esos valores y encenderá las luces según la presión ejercida
+
+DÓNDE ESTARÁ SITUADO EL SENSOR FSR?
+[**por discutir**]
+
+DÓNDE ESTARÁN SITUADAS LAS LUCES?
+[**por discutir**]
+
+CÓMO SE COMPORTARÁN LAS LUCES?
+[**por discutir**, aunque por el momento, se enciende la cantidad de luces correspondientes a la cantidad de presión ejercida]
+
+COLOR DE LAS LUCES?
+[**por discutir**, investigar psicología de los colores]
+
+---
+
+ESP32 MASTER: \
+programandolo como master con el protocolo ESP-NOW, medirá valores del sensor FSR y los mostrará en su monitor serial ajustado a 115200 baud. también mandará estos mismos valores al ESP32 slave.
+
+ESP32 SLAVE: \
+recibirá los valores del master y los mostrará en su monitor serial. también iluminará las luces en base a la presión ejercida en el sensor (conectado al master)
+
+---
+
+## 4 Octubre
+
+hacer que ambos envíen y reciban los datos pal jueves? o hacer que uno mande y el otro reciba
+
+porque idealmente ambos mandan y reciben datos, pero eso supondría el doble del costo en sensores y activadores, sumado al doble de trabajo al tener que instalar ambos peluches
+
+podríamos hacer un objeto que tenga los sensores y que el otro tenga las luces, y en la presentación poner que nuestro alcance sea que ambos tengan sensores y luces.
+
+
+----
+
+
+**código para master**:
+```cpp
+#include <WiFi.h>
+#include <esp_now.h>
+
+// ==========================================
+// PINES Y PARÁMETROS CONFIGURABLES
+// ==========================================
+// [MODIFICABLE] Pin analógico donde conectas el FSR402 con su divisor de tensión
+const int PIN_SENSOR = 15; 
+
+// [MODIFICABLE] Intervalo de envío en milisegundos (evita saturar el canal Wi-Fi)
+const unsigned long INTERVALO_ENVIO_MS = 50; 
+
+// Dirección MAC de difusión (Broadcast): Permite enviar sin conocer la MAC del Slave
+uint8_t macBroadcast[] = {0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF};
+
+// Estructura de datos a enviar (debe ser idéntica en Master y Slave)
+typedef struct struct_mensaje {
+  int valorSensor; // Lectura del ADC (0 a 4095 en ESP32)
+} struct_mensaje;
+
+struct_mensaje datosEnvio;
+esp_now_peer_info_t infoPeer;
+unsigned long ultimoEnvio = 0;
+
+// Callback actualizado para ESP32 Core 3.x
+void alEnviar(const wifi_tx_info_t *info, esp_now_send_status_t status) {
+  // Opcional: descomentar para depuración
+  // Serial.print("Estado de envío: ");
+  // Serial.println(status == ESP_NOW_SEND_SUCCESS ? "Éxito" : "Fallo");
+}
+
+void setup() {
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("\n--- INICIALIZANDO ESP32 MASTER (EMISOR) ---");
+
+  // Configurar el ESP32 en modo estación (requerido por ESP-NOW)
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
+  // Inicializar el protocolo ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error al inicializar ESP-NOW");
+    return;
+  }
+  Serial.println("ESP-NOW inicializado correctamente.");
+
+  // Registrar callback de envío
+  esp_now_register_send_cb(alEnviar);
+
+  // Configurar el peer en modo Broadcast
+  memcpy(infoPeer.peer_addr, macBroadcast, 6);
+  infoPeer.channel = 0;      // [MODIFICABLE] Canal Wi-Fi (0 usa el canal actual por defecto)
+  infoPeer.encrypt = false;  // Broadcast no admite cifrado en ESP-NOW
+
+  // Agregar el peer a la lista de transmisión
+  if (esp_now_add_peer(&infoPeer) != ESP_OK) {
+    Serial.println("Error al registrar el Peer Broadcast");
+    return;
+  }
+  Serial.println("Peer de difusión registrado con éxito.");
+}
+
+void loop() {
+  unsigned long tiempoActual = millis();
+
+  // Enviar lecturas periódicamente sin bloquear con delay()
+  if (tiempoActual - ultimoEnvio >= INTERVALO_ENVIO_MS) {
+    ultimoEnvio = tiempoActual;
+
+    // Leer el valor del sensor FSR402 (rango nativo 0 - 4095)
+    int lecturaADC = analogRead(PIN_SENSOR);
+    datosEnvio.valorSensor = lecturaADC;
+
+    // Mostrar en monitor serial
+    Serial.print("Sensor FSR402 (ADC): ");
+    Serial.println(lecturaADC);
+
+    // Enviar el paquete a la dirección broadcast
+    esp_err_t resultado = esp_now_send(macBroadcast, (uint8_t *)&datosEnvio, sizeof(datosEnvio));
+    if (resultado != ESP_OK) {
+      Serial.println("Error al despachar el paquete");
+    }
+  }
+}
+```
+
+**código para slave**:
+```cpp
+#include <WiFi.h>
+#include <esp_now.h>
+#include <Adafruit_NeoPixel.h>
+
+// ==========================================
+// CONFIGURACIÓN DE LA CINTA LED (MODIFICABLE)
+// ==========================================
+// [MODIFICABLE] Pin digital conectado a la línea DIN de los WS2812B
+#define PIN_LEDS 16 
+
+// [MODIFICABLE] Número total de LEDs en la cinta
+#define NUM_LEDS 9  
+
+// [MODIFICABLE] Color cálido base en formato RGB (Rango: 0 a 255)
+// Un blanco cálido típico tiene alta proporción de rojo y ámbar:
+const uint8_t COLOR_R = 255;
+const uint8_t COLOR_G = 140;
+const uint8_t COLOR_B = 30;
+
+// [MODIFICABLE] Umbral mínimo del sensor para considerar presión (filtra ruido eléctrico)
+const int UMBRAL_RUIDO = 100;
+
+// [MODIFICABLE] Brillo máximo permitido (1 a 255)
+const uint8_t BRILLO_MAX = 255;
+
+// Inicialización del objeto NeoPixel
+Adafruit_NeoPixel tiraLeds(NUM_LEDS, PIN_LEDS, NEO_GRB + NEO_KHZ800);
+
+// Estructura idéntica a la del Master
+typedef struct struct_mensaje {
+  int valorSensor;
+} struct_mensaje;
+
+struct_mensaje datosRecibidos;
+
+// Callback ejecutado al recibir un paquete por ESP-NOW
+void alRecibir(const esp_now_recv_info_t *info, const uint8_t *datos, int len) {
+  // Copiar los datos entrantes a la estructura local
+  memcpy(&datosRecibidos, datos, sizeof(datosRecibidos));
+
+  int valorRaw = datosRecibidos.valorSensor;
+
+  // Imprimir valor recibido en monitor serial
+  Serial.print("Valor recibido del Master: ");
+  Serial.print(valorRaw);
+
+  // Mapear la lectura del ADC (0 - 4095) a nivel de brillo (0 - 255)
+  int brilloCalculado = 0;
+  if (valorRaw > UMBRAL_RUIDO) {
+    // Si supera el umbral de ruido, escalar proporcionalmente
+    brilloCalculado = map(valorRaw, UMBRAL_RUIDO, 4095, 5, BRILLO_MAX);
+    brilloCalculado = constrain(brilloCalculado, 0, BRILLO_MAX);
+  } else {
+    // Si no hay presión suficiente, apagar
+    brilloCalculado = 0;
+  }
+
+  Serial.print(" -> Brillo aplicado: ");
+  Serial.println(brilloCalculado);
+
+  // Ajustar el brillo global de la tira
+  tiraLeds.setBrightness(brilloCalculado);
+
+  // Asignar el color cálido a cada uno de los LEDs
+  for (int i = 0; i < NUM_LEDS; i++) {
+    tiraLeds.setPixelColor(i, tiraLeds.Color(COLOR_R, COLOR_G, COLOR_B));
+  }
+
+  // Refrescar la tira para aplicar los cambios de color y brillo
+  tiraLeds.show();
+}
+
+void setup() {
+  // Inicialización de la consola serial a 115200 baudios
+  Serial.begin(115200);
+  delay(1000);
+  Serial.println("\n--- INICIALIZANDO ESP32 SLAVE (RECEPTOR) ---");
+
+  // Iniciar la tira de LEDs
+  tiraLeds.begin();
+  tiraLeds.clear();
+  tiraLeds.show(); // Iniciar con LEDs apagados
+
+  // Configurar Wi-Fi en modo estación
+  WiFi.mode(WIFI_STA);
+  WiFi.disconnect();
+
+  // Inicializar ESP-NOW
+  if (esp_now_init() != ESP_OK) {
+    Serial.println("Error al inicializar ESP-NOW");
+    return;
+  }
+  Serial.println("ESP-NOW receptor listo.");
+
+  // Registrar función callback para procesar paquetes entrantes
+  esp_now_register_recv_cb(alRecibir);
+}
+
+void loop() {
+  // El procesamiento se realiza de forma reactiva en el callback alRecibir()
+}
+```
+
+
+---
+
+SÍNTESIS:
+un artefacto que simula una comunicación somántica entre dos personas que se encuentran a distancia
+
+
+QUÉ:
+un dispositivo lumínico que simula una comunicación somántica a distancia entre dos personas ...???
+
+POR QUÉ:
+
+CÓMO:
+Ambos dispositivos cuentan con un microcontrolador ESP32, un sensor de presión y una cinta de LEDs. Los microcontroladores se comunican entre ellos de manera inalámbrica. Cuando se presiona uno de los dispositivos, éste le manda la señal al otro dispositivo haciendo que se ilumine levemente la base del dispositivo, indicandole al usuario que debe presionar su dispositivo también. Cuando ambos usuarios presionan sus dispositivos simultáneamente, los dos dispositivos se iluminan por completo de manera más intensa, haciendo alusión a que se formó la conexión. Cuando un usuario presiona su dispositivo pero el otro no alcanza a ser presionado, el dispositivo que no fue presionado iluminará su base de manera tenue para indicar que el otro dispositivo fue presionado anteriormente.
+
+Al presionar uno de los dispositivos, éste le manda la señal al otro dispositivo haciendo que se ilumine levemente su base, indicándole al usuario que debe presionar su dispositivo también. Cuando ambos dispositivos se presionan simultáneamente, se iluminan por completo de manera más intensa, haciendo alusión a que se formó la conexión. Cuando un usuario presiona su dispositivo pero el otro no alcanza a ser presionado, el dispositivo que no fue presionado iluminará su base de manera tenue para indicar que el otro dispositivo fue presionado anteriormente.
+
+---
+
+- reprogramar ESPs para luces + sensor
+
+la esp32 ya no solo debe leer el sensor, sino que también tendrá los leds incorporados. los leds funcionarán de igual manera que en el slave 
+
+---
+ver tema tecnico
+llegar a la u 8:30, terminar caja
+
+---
